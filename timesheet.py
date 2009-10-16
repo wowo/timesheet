@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import csv, os
+import os
 from datetime import date, datetime, timedelta
+from drivers import CSV
 
 class Timesheet:
   path = ''
@@ -32,13 +33,13 @@ class Timesheet:
     return False
 
   def calculate(self):
-    csvReader = csv.reader(open(self.path), delimiter=';')
     result = {'days': {}, 'weeks' :{}}
-    #days  = {}
-    #weeks = {}
-    for row in csvReader:
-      start = datetime.strptime('.'.join([row[0], str(self.month), str(self.year)]) + ' ' + row[1], '%d.%m.%Y %H:%M')
-      stop  = datetime.strptime('.'.join([row[0], str(self.month), str(self.year)]) + ' ' + row[2], '%d.%m.%Y %H:%M')
+
+    driver = CSV()
+    data   = driver.getData({'path' : self.path})
+    for row in data:
+      start = datetime.strptime('.'.join([row['day'], str(self.month), str(self.year)]) + ' ' + row['start'], '%d.%m.%Y %H:%M')
+      stop  = datetime.strptime('.'.join([row['day'], str(self.month), str(self.year)]) + ' ' + row['stop' ], '%d.%m.%Y %H:%M')
       delta = stop - start
 
       #days
