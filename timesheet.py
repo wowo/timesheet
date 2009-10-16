@@ -73,7 +73,12 @@ class Timesheet:
 
     print "\n* weeks:"
     for k in keys:
-      print "%02d - %.2f - delta: %.2f" % (k, result['weeks'][k], result['weeks'][k] - 40.0)
+      #check how much working hours has this week
+      hours = 0
+      for day in range(1, 6):
+        if datetime.strptime('%d %d %s' % (day, k,  self.year), '%w %W %Y').month == self.month:
+          hours += 8.0
+      print "%02d - %.2f - delta: %.2f" % (k, result['weeks'][k], result['weeks'][k] - hours)
 
   def showSummary(self, result):
     print """
