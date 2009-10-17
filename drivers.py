@@ -1,4 +1,4 @@
-import csv, os
+import csv, os, MySQLdb
 
 class Driver:
   def getData(self):
@@ -12,5 +12,19 @@ class CSV(Driver):
         'day'  : row[0],
         'start': row[1],
         'stop' : row[2],
+      })
+    return result
+
+class MySQL(Driver):
+  def getData(self, params):
+    result = []
+    conn = MySQLdb.connect(params['host'], params['user'], params['pass'], params['base'])
+    c = conn.cursor()
+    c.execute("SELECT day, start, stop FROM entries WHERE month = %d AND year = %d" % (params["month"], params["year"]))
+    for row in c.fetchall():
+      result.append({
+        'day'  : int(row[0]),
+        'start': str(row[1]),
+        'stop' : str(row[2]),
       })
     return result

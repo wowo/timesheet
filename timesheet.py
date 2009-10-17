@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 from datetime import date, datetime, timedelta
-from drivers import CSV
+from drivers import CSV, MySQL
 
 class Timesheet:
   path = ''
@@ -35,11 +35,16 @@ class Timesheet:
   def calculate(self):
     result = {'days': {}, 'weeks' :{}}
 
-    driver = CSV()
-    data   = driver.getData({'path' : self.path})
+    #driver = CSV()
+    #params = {'path' : self.path}
+
+    driver = MySQL()
+    params = {'host': 'localhost', 'user': 'timesheet', 'base': 'timesheet', 'pass': 'timeszit12', 'month': self.month, 'year': self.year}
+
+    data   = driver.getData(params)
     for row in data:
-      start = datetime.strptime('.'.join([row['day'], str(self.month), str(self.year)]) + ' ' + row['start'], '%d.%m.%Y %H:%M')
-      stop  = datetime.strptime('.'.join([row['day'], str(self.month), str(self.year)]) + ' ' + row['stop' ], '%d.%m.%Y %H:%M')
+      start = datetime.strptime('.'.join([str(row['day']), str(self.month), str(self.year)]) + ' ' + row['start'], '%d.%m.%Y %H:%M:%S')
+      stop  = datetime.strptime('.'.join([str(row['day']), str(self.month), str(self.year)]) + ' ' + row['stop' ], '%d.%m.%Y %H:%M:%S')
       delta = stop - start
 
       #days
@@ -95,3 +100,4 @@ try:
   timesheet.show()
 except Exception as e:
   print "An error occured, message: %s" % e
+  raise
