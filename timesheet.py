@@ -35,11 +35,11 @@ class Timesheet:
   def calculate(self):
     result = {'days': {}, 'weeks' :{}}
 
-    #driver = CSV()
-    #params = {'path' : self.path}
+    driver = CSV()
+    params = {'path' : self.path}
 
-    driver = MySQL()
-    params = {'host': 'localhost', 'user': 'timesheet', 'base': 'timesheet', 'pass': 'timeszit12', 'month': self.month, 'year': self.year}
+    #driver = MySQL()
+    #params = {'host': 'localhost', 'user': 'timesheet', 'base': 'timesheet', 'pass': 'timeszit12', 'month': self.month, 'year': self.year}
 
     data   = driver.getData(params)
     for row in data:
@@ -71,7 +71,7 @@ class Timesheet:
   def showDays(self, result):
     print "\n* days:"
     for k,v in result['days'].iteritems():
-      print "%02d - %.2f - delta: %.2f" % (k, v, v - 8.0)
+      print "%02d - %.2f - delta: %+.2f" % (k, v, v - 8.0)
 
   def showWeeks(self, result):
     keys = result['weeks'].keys()
@@ -82,16 +82,19 @@ class Timesheet:
       #check how much working hours has this week
       hours = 0
       for day in range(1, 6):
-        if datetime.strptime('%d %d %s' % (day, k,  self.year), '%w %W %Y').month == self.month:
+        today = datetime.strptime('%d %d %s' % (day, k,  self.year), '%w %W %Y')
+        if today > datetime.today():
+          break
+        if today.month == self.month:
           hours += 8.0
-      print "%02d - %.2f - delta: %.2f" % (k, result['weeks'][k], result['weeks'][k] - hours)
+      print "%02d - %5.2f - delta: %+.2f" % (k, result['weeks'][k], result['weeks'][k] - hours)
 
   def showSummary(self, result):
     print """
     -----------------------
-    Working hours:   %.2f  
-    Average per day: %.2f  
-    Missing hours:   %.2f""" % (sum(result['days'].values()), (float(sum(result['days'].values())) / len(result['days'].values())) , (8.0 * len(result['days'].keys()) - sum(result['days'].values())))
+    Working hours:   %6.2f  
+    Average per day: %6.2f  
+    Missing hours:   %6.2f""" % (sum(result['days'].values()), (float(sum(result['days'].values())) / len(result['days'].values())) , (8.0 * len(result['days'].keys()) - sum(result['days'].values())))
 
 
 #Program call
@@ -100,4 +103,3 @@ try:
   timesheet.show()
 except Exception as e:
   print "An error occured, message: %s" % e
-  raise
