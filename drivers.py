@@ -23,10 +23,12 @@ class CSV(Driver):
     return result
 
 class MySQL(Driver):
-  def getData(self, params, attempt=1):
-    result = []
+  conn = None
+
+  def getConnection(self, params):
     try:
       conn = MySQLdb.connect(params['host'], params['user'], params['pass'], params['base'])
+      return conn
     except Exception as (errno, strerror):
       if errno == 1045 and 'progreso.pl' in params['host']:
         if attempt > 2:
@@ -35,14 +37,24 @@ class MySQL(Driver):
         reader = urllib.urlopen('http://p25.progreso.pl/unlock-ports.pl')
         print 'Unlocking ports on progreso and try again, attempt: %d, response: %s' % (attempt, reader.read())
         self.getData(params, attempt + 1)
-        return []
+        return None
 
-    c = conn.cursor()
-    c.execute("SELECT day, start, stop FROM entries WHERE month = %d AND year = %d" % (self.month, self.year))
-    for row in c.fetchall():
+  def getData(self, params, attempt=1):
+    result = []
+    conn = self.getConnection(params)
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT day, start, stop FROM entries WHERE month = %d AND year = %d" % (self.month, self.year))
+    for row in cursor.fetchall():
       result.append({
         'day'  : int(row[0]),
         'start': str(row[1]),
         'stop' : str(row[2]),
       })
     return result
+
+  def add(self, params, day, start, stop):
+    conn = self.getConnection(params)
+    conn.cursor().execute("INSERT INTO entries(day, month, year, start, stop) VALUES(%d, %d, %d, '%s:00', '%s:00')" % (day, self.month, self.year, start, stop))
+    conn.commit()
+    

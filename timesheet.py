@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import os
+# -*- coding: utf-8 -*-
+import os, sys, re
 from datetime import date, datetime, timedelta
 from drivers import CSV, MySQL
 
@@ -35,6 +36,9 @@ class Timesheet:
       self.params = {'path' : self.path}
     else:
       raise Exception("No such driver %s" % self.driverName)
+
+  def add(self, day, start, stop):
+    self.driver.add(self.params, int(day), start,stop)
 
   def autoDiscover(self):
     paths = (
@@ -111,7 +115,33 @@ class Timesheet:
 #Program call
 try: 
   timesheet = Timesheet()
+  #Dodawanie nowych wierszy
+  if '-i' in sys.argv: 
+    print "Podaj dzien [%d] " % date.today().day
+    day = sys.stdin.readline().strip()
+    if not len(day):
+      day = date.today().day
+
+    start = ''
+    stop  = ''
+    while not re.match('\d{1,2}:\d{2}', start):
+      print "Podaj godzinę początkową w formacie 00:00"
+      start = sys.stdin.readline().strip()
+
+    while not re.match('\d{1,2}:\d{2}', stop):
+      print "Podaj godzinę końcową w formacie 00:00"
+      stop = sys.stdin.readline().strip()
+
+    print """
+Dodaje wpis:
+  Dzień: %s
+  Godzina początkowa: %s
+  Godzina końcowa: %s
+""" % (day, start, stop)
+    timesheet.add(day, start, stop)
+
+  #Wyswietlanie timesheeta
   timesheet.show()
 except Exception as e:
   print "An error occured, message: %s" % e
-  #raise
+  raise
