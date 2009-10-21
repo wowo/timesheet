@@ -4,21 +4,38 @@ from datetime import date, datetime, timedelta
 from drivers import CSV, MySQL
 
 class Timesheet:
-  path = ''
-  year = 0
-  month = 0
+  year   = 0
+  month  = 0
+  path   = ''
+  params = {}
+  driverName = 'mysql'
+  driver = None
 
-  def __init__(self, path = '', month = 0, year = 0):
+  def __init__(self, month = 0, year = 0):
     if month == 0:
       self.month = date.today().month
     if year == 0:
       self.year = date.today().year
-    if not len(path):
-      self.autoDiscover()
 
-    if not os.path.exists(self.path):
-      raise Exception("Path %s not found" % self.path)
-  
+    if self.driverName == 'mysql':
+      self.driver = MySQL(self.month, self.year)
+      self.params = {
+        'host': 'p25a.progreso.pl', 
+        'user': 'wowo86_timesheet', 
+        'base': 'wowo86_timesheet', 
+        'pass': 'timeszit12'
+      }
+      #self.params = {'host': 'localhost', 'user': 'timesheet', 'base': 'timesheet', 'pass': 'timeszit12', 'month': self.month, 'year': self.year}
+    elif self.driverName == 'csv':
+      self.autoDiscover()
+      if not os.path.exists(self.path):
+        raise Exception("Path %s not found" % self.path)
+
+      self.driver = CSV(self.month, self.year)
+      self.params = {'path' : self.path}
+    else:
+      raise Exception("No such driver %s" % self.driverName)
+
   def autoDiscover(self):
     paths = (
       "timesheet.%d.%d.csv" % (self.month, self.year),
@@ -35,13 +52,7 @@ class Timesheet:
   def calculate(self):
     result = {'days': {}, 'weeks' :{}}
 
-    driver = CSV()
-    params = {'path' : self.path}
-
-    #driver = MySQL()
-    #params = {'host': 'localhost', 'user': 'timesheet', 'base': 'timesheet', 'pass': 'timeszit12', 'month': self.month, 'year': self.year}
-
-    data   = driver.getData(params)
+    data = self.driver.getData(self.params)
     for row in data:
       start = datetime.strptime('.'.join([str(row['day']), str(self.month), str(self.year)]) + ' ' + row['start'], '%d.%m.%Y %H:%M:%S')
       stop  = datetime.strptime('.'.join([str(row['day']), str(self.month), str(self.year)]) + ' ' + row['stop' ], '%d.%m.%Y %H:%M:%S')
@@ -103,3 +114,4 @@ try:
   timesheet.show()
 except Exception as e:
   print "An error occured, message: %s" % e
+  #raise
