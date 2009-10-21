@@ -49,7 +49,7 @@ class Timesheet:
     for proposal in paths:
       if (os.path.exists(proposal)):
         self.path = proposal
-        print "Autodiscover: found path: %s" % proposal
+        print "Automatyczne wykreywanie: znaleziona ścieżka: %s" % proposal
         return True
     return False
 
@@ -84,15 +84,15 @@ class Timesheet:
     self.showSummary(result)
 
   def showDays(self, result):
-    print "\n* days:"
+    print "\n* dni:"
     for k,v in result['days'].iteritems():
-      print "%02d - %.2f - delta: %+.2f" % (k, v, v - 8.0)
+      print "%2d - %5.2f - delta: %+.2f" % (k, v, v - 8.0)
 
   def showWeeks(self, result):
     keys = result['weeks'].keys()
     keys.sort()
 
-    print "\n* weeks:"
+    print "\n* tygodnie:"
     for k in keys:
       #check how much working hours has this week
       hours = 0
@@ -102,14 +102,14 @@ class Timesheet:
           break
         if today.month == self.month:
           hours += 8.0
-      print "%02d - %5.2f - delta: %+.2f" % (k, result['weeks'][k], result['weeks'][k] - hours)
+      print "%02d - %5.2f - delta: %+6.2f" % (k, result['weeks'][k], result['weeks'][k] - hours)
 
   def showSummary(self, result):
     print """
-    -----------------------
-    Working hours:   %6.2f  
-    Average per day: %6.2f  
-    Missing hours:   %6.2f""" % (sum(result['days'].values()), (float(sum(result['days'].values())) / len(result['days'].values())) , (8.0 * len(result['days'].keys()) - sum(result['days'].values())))
+* podsumowanie:
+Godziny przepracowane: %6.2f  
+Średnia na dzień:      %6.2f  
+Brakujące godziny:     %6.2f""" % (sum(result['days'].values()), (float(sum(result['days'].values())) / len(result['days'].values())) , (8.0 * len(result['days'].keys()) - sum(result['days'].values())))
 
 
 #Program call
@@ -143,5 +143,5 @@ Dodaje wpis:
   #Wyswietlanie timesheeta
   timesheet.show()
 except Exception as e:
-  print "An error occured, message: %s" % e
-  raise
+  print "Wystąpił błąd, wiadomość: %s" % e
+  #raise
