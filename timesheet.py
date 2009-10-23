@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os, sys, re
+import os, sys, re, calendar
 from datetime import date, datetime, timedelta
 from drivers import CSV, MySQL
 
@@ -11,6 +11,7 @@ class Timesheet:
   params = {}
   driverName = 'mysql'
   driver = None
+  monthInfo = {}
 
   def __init__(self, month = 0, year = 0):
     if month == 0:
@@ -76,6 +77,22 @@ class Timesheet:
         result['weeks'][week] = delta.seconds / 3600.0
 
     return result
+
+  def getMonthInfo(self):
+    if self.monthInfo == {}:
+      self.info = {'days': 0, 'weeks': {}, 'workingHours': 0}
+      cal = calendar.Calendar()
+      for day in cal.itermonthdays2(self.year, self.month):
+        if day[0] > 0 and day[1] in range(0,5):
+          self.info['days'] += 1
+          week = int(datetime.strptime('.'.join([str(day[0]), str(self.month), str(self.year)]), '%d.%m.%Y').strftime('%W')) + 1
+          if week in self.info['weeks']:
+            self.info['weeks'][week] += 8.0
+          else: 
+            self.info['weeks'][week] = 8.0
+
+      self.info['workingHours'] = self.info['days'] * 8.00
+      print self.info
 
   def show(self):
     result = self.calculate()
@@ -144,4 +161,4 @@ Dodaje wpis:
   timesheet.show()
 except Exception as e:
   print "Wystąpił błąd, wiadomość: %s" % e
-  #raise
+  raise
