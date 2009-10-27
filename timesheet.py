@@ -92,7 +92,7 @@ class Timesheet:
             self.info['weeks'][week] = 8.0
 
       self.info['workingHours'] = self.info['days'] * 8.00
-      print self.info
+    return self.info
 
   def show(self):
     result = self.calculate()
@@ -122,12 +122,24 @@ class Timesheet:
       print "%02d - %5.2f - delta: %+6.2f" % (k, result['weeks'][k], result['weeks'][k] - hours)
 
   def showSummary(self, result):
+    info    = self.getMonthInfo()
+    hours   = sum(result['days'].values())
+    missing = 8.0 * len(result['days'].keys()) - hours
     print """
 * podsumowanie:
+Godzin roboczych:      %6.2f
 Godziny przepracowane: %6.2f  
+Miesięczny %% godzin:   %5.f%%
+Współczynnik:          %5.f%%
 Średnia na dzień:      %6.2f  
-Brakujące godziny:     %6.2f""" % (sum(result['days'].values()), (float(sum(result['days'].values())) / len(result['days'].values())) , (8.0 * len(result['days'].keys()) - sum(result['days'].values())))
-
+Brakujące godziny:     %6.2f """ % (
+                                    info['workingHours'],
+                                    hours,
+                                    (hours / info['workingHours']) * 100,
+                                    (hours / (hours + missing)) * 100,
+                                    float(hours) / len(result['days'].values()),
+                                    missing,
+                                   )
 
 #Program call
 try: 
