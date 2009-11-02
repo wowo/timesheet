@@ -124,7 +124,8 @@ class Timesheet:
   def showSummary(self, result):
     info    = self.getMonthInfo()
     hours   = sum(result['days'].values())
-    missing = 8.0 * len(result['days'].keys()) - hours
+    missing = info['workingHours'] - hours
+    print info
     print """
 * podsumowanie:
 Godzin roboczych:      %6.2f
@@ -137,7 +138,7 @@ Brakujące godziny:     %6.2f """ % (
                                     hours,
                                     (hours / info['workingHours']) * 100,
                                     (hours / (hours + missing)) * 100,
-                                    float(hours) / len(result['days'].values()),
+                                    float(hours) / len(result['days'].values()) if len(result['days'].values()) else 0,
                                     missing,
                                    )
 
